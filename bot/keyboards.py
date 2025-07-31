@@ -13,7 +13,8 @@ def cards_menu():
     return InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="Обычные", callback_data="обычная")],
         [InlineKeyboardButton(text="Редкие", callback_data="редкая")],
-        [InlineKeyboardButton(text="Избранное", callback_data="избранное")]
+        [InlineKeyboardButton(text="Легендарные", callback_data="легендарная")],
+        [InlineKeyboardButton(text="Избранное", callback_data="favorite")]
     ])
 
 def card_details(cards, rarity, is_favorite=False):

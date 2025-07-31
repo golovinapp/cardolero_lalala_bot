@@ -1,17 +1,23 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
-from werkzeug.security import check_password_hash, generate_password_hash
+from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory
 from bot.database import get_session
 from bot.models import Card
 from dotenv import load_dotenv
 import os
+import uuid
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
 load_dotenv()
 
+UPLOAD_FOLDER = 'web/static/images'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+
 def check_auth():
     password = request.form.get('password')
-    if password and check_password_hash(generate_password_hash(os.getenv('ADMIN_PASSWORD')), password):
+    expected_password = os.getenv('ADMIN_PASSWORD')
+    if password and password == expected_password:
         return True
     flash("Неверный пароль!")
     return False
@@ -35,13 +41,22 @@ def cards():
         description = request.form.get('description')
         points = request.form.get('points')
         rarity = request.form.get('rarity')
-        image_url = request.form.get('image_url')
+        image = request.files.get('image')
         
-        if not all([name, description, points, rarity, image_url]):
-            flash("Все поля обязательны!")
+        if not all([name, description, points, rarity, image]):
+            flash("Все поля, включая изображение, обязательны! 📷")
         elif not points.isdigit():
-            flash("Очки должны быть числом!")
+            flash("Очки должны быть числом! 🔢")
         else:
+            # Сохраняем изображение с уникальным именем
+            if image:
+                filename = f"{uuid.uuid4()}.{image.filename.split('.')[-1]}"
+                image_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                image.save(image_path)
+                image_url = f"/static/images/{filename}"
+            else:
+                image_url = ""
+            
             card = Card(
                 name=name,
                 description=description,
@@ -51,7 +66,7 @@ def cards():
             )
             session.add(card)
             session.commit()
-            flash("Карточка добавлена!")
+            flash("Карточка добавлена! 🎉")
     
     return render_template('cards.html', cards=cards, page=page, total_pages=(total_cards+per_page-1)//per_page)
 
@@ -60,9 +75,11 @@ def delete_card(card_id):
     session = get_session()
     card = session.query(Card).get(card_id)
     if card:
+        if card.image_url and os.path.exists(os.path.join(app.config['UPLOAD_FOLDER'], card.image_url.split('/')[-1])):
+            os.remove(os.path.join(app.config['UPLOAD_FOLDER'], card.image_url.split('/')[-1]))
         session.delete(card)
         session.commit()
-        flash("Карточка удалена!")
+        flash("Карточка удалена! 🗑️")
     return redirect(url_for('cards'))
 
 @app.route('/card/<int:card_id>/edit', methods=['GET', 'POST'])
@@ -74,8 +91,19 @@ def edit_card(card_id):
         card.description = request.form.get('description')
         card.points = int(request.form.get('points'))
         card.rarity = request.form.get('rarity')
-        card.image_url = request.form.get('image_url')
+        image = request.files.get('image')
+        if image:
+            if card.image_url and os.path.exists(os.path.join(app.config['UPLOAD_FOLDER'], card.image_url.split('/')[-1])):
+                os.remove(os.path.join(app.config['UPLOAD_FOLDER'], card.image_url.split('/')[-1]))
+            filename = f"{uuid.uuid4()}.{image.filename.split('.')[-1]}"
+            image_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            image.save(image_path)
+            card.image_url = f"/static/images/{filename}"
         session.commit()
-        flash("Карточка обновлена!")
+        flash("Карточка обновлена! ✨")
         return redirect(url_for('cards'))
     return render_template('cards.html', card=card)
+
+@app.route('/static/images/<filename>')
+def uploaded_file(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)

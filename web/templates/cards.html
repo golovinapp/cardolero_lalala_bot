@@ -1,16 +1,17 @@
 {% extends 'base.html' %}
 {% block content %}
 <h1>Управление карточками</h1>
-<form method="post">
-    <input type="text" name="name" placeholder="Название" required>
-    <textarea name="description" placeholder="Описание" required></textarea>
-    <input type="number" name="points" placeholder="Очки" inputmode="numeric" required>
+<form method="post" enctype="multipart/form-data">
+    <input type="text" name="name" placeholder="Название" value="{{ card.name if card else '' }}" required>
+    <textarea name="description" placeholder="Описание" required>{{ card.description if card else '' }}</textarea>
+    <input type="number" name="points" placeholder="Очки" inputmode="numeric" value="{{ card.points if card else '' }}" required>
     <select name="rarity" required>
-        <option value="обычная">Обычная</option>
-        <option value="редкая">Редкая</option>
+        <option value="обычная" {% if card and card.rarity == 'обычная' %}selected{% endif %}>Обычная</option>
+        <option value="редкая" {% if card and card.rarity == 'редкая' %}selected{% endif %}>Редкая</option>
+        <option value="легендарная" {% if card and card.rarity == 'легендарная' %}selected{% endif %}>Легендарная</option>
     </select>
-    <input type="text" name="image_url" placeholder="URL изображения" required>
-    <button type="submit">Добавить</button>
+    <input type="file" name="image" accept="image/*" required>
+    <button type="submit">{% if card %}Обновить{% else %}Добавить{% endif %}</button>
 </form>
 
 <h2>Список карточек</h2>

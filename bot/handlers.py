@@ -53,28 +53,63 @@ async def get_card(message: Message):
     session.add(user_card)
     session.commit()
     
-    await message.answer(f"Вы получили карточку: {random_card.name} ({random_card.rarity})!")
+    caption = (
+        f"Новая карта — <b>{random_card.name}</b>\n"
+        f"Описание: {random_card.description}\n"
+        f"Очки: {random_card.points}\n"
+        f"Редкость: {random_card.rarity}\n"
+        f"Получи картошку раз в 12 часов с /bonus! 🥔"
+    )
+    await message.answer_photo(
+        photo=random_card.image_url,
+        caption=caption,
+        parse_mode="HTML",
+        reply_markup=main_menu()
+    )
 
 @router.message(F.text == "Мои карточки")
 async def my_cards(message: Message, state: FSMContext):
     await message.answer("Выберите категорию:", reply_markup=cards_menu())
     await state.set_state(CardStates.SELECT_RARITY)
 
+# @router.callback_query(CardStates.SELECT_RARITY)
+# async def select_rarity(callback: CallbackQuery, state: FSMContext):
+#     rarity = callback.data
+#     session = get_session()
+#     user_cards = session.query(UserCard).join(Card).filter(
+#         UserCard.user_id == callback.from_user.id,
+#         Card.rarity == rarity
+#     ).all()
+    
+#     if not user_cards:
+#         await callback.message.answer("У вас нет карточек этой редкости!")
+#         return
+    
+#     cards = {uc.card.name: uc.card_id for uc in user_cards}
+#     await callback.message.answer("Выберите карточку:", reply_markup=card_details(cards, rarity))
+#     await state.set_state(CardStates.SELECT_CARD)
+#     await callback.answer()
 @router.callback_query(CardStates.SELECT_RARITY)
 async def select_rarity(callback: CallbackQuery, state: FSMContext):
     rarity = callback.data
     session = get_session()
-    user_cards = session.query(UserCard).join(Card).filter(
-        UserCard.user_id == callback.from_user.id,
-        Card.rarity == rarity
-    ).all()
+    if rarity == "favorite":
+        user_cards = session.query(UserCard).filter_by(
+            user_id=callback.from_user.id,
+            is_favorite=True
+        ).all()
+    else:
+        user_cards = session.query(UserCard).join(Card).filter(
+            UserCard.user_id == callback.from_user.id,
+            Card.rarity == rarity
+        ).all()
     
     if not user_cards:
-        await callback.message.answer("У вас нет карточек этой редкости!")
+        await callback.message.answer("У вас нет карточек этой редкости или избранных!")
         return
     
     cards = {uc.card.name: uc.card_id for uc in user_cards}
-    await callback.message.answer("Выберите карточку:", reply_markup=card_details(cards, rarity))
+    await callback.message.answer("Выберите карточку:", reply_markup=card_details(cards, rarity if rarity != "favorite" else "избранное"))
     await state.set_state(CardStates.SELECT_CARD)
     await callback.answer()
 
@@ -93,10 +128,16 @@ async def show_card(callback: CallbackQuery, state: FSMContext):
         return
     
     card = session.query(Card).get(card_id)
-    caption = f"{card.name}\n{card.description}\nОчки: {card.points}\nРедкость: {card.rarity}"
+    caption = (
+        f"<b>{card.name}</b>\n"
+        f"{card.description}\n"
+        f"Очки: {card.points}\n"
+        f"Редкость: {card.rarity}"
+    )
     await callback.message.answer_photo(
         photo=card.image_url,
         caption=caption,
+        parse_mode="HTML",
         reply_markup=card_details({"favorite": card_id}, card.rarity, user_card.is_favorite)
     )
     await callback.answer()
