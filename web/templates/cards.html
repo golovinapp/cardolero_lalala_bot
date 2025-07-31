@@ -2,13 +2,13 @@
 {% block content %}
 <h1>Управление карточками</h1>
 <form method="post" enctype="multipart/form-data">
-    <input type="text" name="name" placeholder="Название" value="{{ card.name if card else '' }}" required>
-    <textarea name="description" placeholder="Описание" required>{{ card.description if card else '' }}</textarea>
-    <input type="number" name="points" placeholder="Очки" inputmode="numeric" value="{{ card.points if card else '' }}" required>
+    <input type="text" name="name" placeholder="Название 🎉" value="{{ card.name if card else '' }}" required>
+    <textarea name="description" placeholder="Описание ✨" required>{{ card.description if card else '' }}</textarea>
+    <input type="number" name="points" placeholder="Очки 🔢" inputmode="numeric" value="{{ card.points if card else '' }}" required>
     <select name="rarity" required>
-        <option value="обычная" {% if card and card.rarity == 'обычная' %}selected{% endif %}>Обычная</option>
-        <option value="редкая" {% if card and card.rarity == 'редкая' %}selected{% endif %}>Редкая</option>
-        <option value="легендарная" {% if card and card.rarity == 'легендарная' %}selected{% endif %}>Легендарная</option>
+        <option value="обычная" {% if card and card.rarity == 'обычная' %}selected{% endif %}>Обычная 🌱</option>
+        <option value="редкая" {% if card and card.rarity == 'редкая' %}selected{% endif %}>Редкая 🌟</option>
+        <option value="легендарная" {% if card and card.rarity == 'легендарная' %}selected{% endif %}>Легендарная 🔥</option>
     </select>
     <input type="file" name="image" accept="image/*" required>
     <button type="submit">{% if card %}Обновить🎨{% else %}Добавить⭐{% endif %}</button>
@@ -16,19 +16,30 @@
 
 <h2>Список карточек</h2>
 <table>
-    {% for card in cards %}
-    <tr>
-        <td>{{ card.name }}</td>
-        <td>{{ card.rarity }}</td>
-        <td>{{ card.points }}</td>
-        <td><a href="{{ url_for('edit_card', card_id=card.id, page=page) }}">Редактировать🎉</a></td>
-        <td>
-            <form method="post" action="{{ url_for('delete_card', card_id=card.id, page=page) }}">
-                <button type="submit">Удалить🗑️</button>
-            </form>
-        </td>
-    </tr>
-    {% endfor %}
+    <thead>
+        <tr>
+            <th>Название</th>
+            <th>Редкость</th>
+            <th>Очки</th>
+            <th>Редактировать</th>
+            <th>Удалить</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for card in cards %}
+        <tr>
+            <td>{{ card.name }}</td>
+            <td>{{ card.rarity }}</td>
+            <td>{{ card.points }}</td>
+            <td><a href="{{ url_for('edit_card', card_id=card.id, page=page) }}">Редактировать🎉</a></td>
+            <td>
+                <form method="post" action="{{ url_for('delete_card', card_id=card.id, page=page) }}">
+                    <button type="submit">Удалить🗑️</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
 </table>
 
 <div>

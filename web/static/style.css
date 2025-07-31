@@ -61,6 +61,7 @@ input, textarea, select {
     border-radius: 10px;
     font-size: 16px;
     background: #fff3e0;
+    box-sizing: border-box; /* Убеждаемся, что padding не увеличивает размер */
 }
 
 button {
@@ -72,6 +73,9 @@ button {
     border-radius: 10px;
     font-size: 18px;
     transition: transform 0.2s, background 0.2s;
+    display: block; /* Кнопки как блочные элементы */
+    width: 100%; /* Полная ширина на мобильных */
+    margin: 10px 0;
 }
 
 button:hover {
@@ -87,6 +91,7 @@ table {
     border-collapse: collapse;
     width: 100%;
     background: #ffebee;
+    table-layout: fixed; /* Фиксированная ширина колонок */
 }
 
 td, th {
@@ -94,6 +99,7 @@ td, th {
     padding: 15px;
     text-align: center;
     font-size: 16px;
+    word-wrap: break-word; /* Перенос длинных слов */
 }
 
 td a {
@@ -115,25 +121,9 @@ form button[type="submit"]:hover {
     background: #388e3c;
 }
 
-/* Адаптивность для мобильных */
+/* Улучшенная адаптивность для мобильных */
 @media (max-width: 600px) {
     body {
-        padding: 10px;
-    }
-    table {
-        display: block;
-        overflow-x: auto;
-    }
-    td, th {
-        min-width: 120px;
-        font-size: 14px;
-        padding: 10px;
-    }
-    form {
-        padding: 15px;
-    }
-    input, textarea, select, button {
-        font-size: 14px;
         padding: 10px;
     }
     h1 {
@@ -142,7 +132,34 @@ form button[type="submit"]:hover {
     h2 {
         font-size: 18px;
     }
+    form, table {
+        padding: 10px;
+        border-radius: 10px;
+    }
+    input, textarea, select {
+        font-size: 14px;
+        padding: 10px;
+    }
     button {
+        font-size: 14px;
         padding: 10px 20px;
+        width: 100%;
+    }
+    table {
+        display: block;
+        overflow-x: auto; /* Горизонтальная прокрутка для таблицы */
+    }
+    td, th {
+        min-width: 100px; /* Минимальная ширина для читаемости */
+        font-size: 12px;
+        padding: 8px;
+    }
+    /* Уменьшаем шрифт для ссылок */
+    td a {
+        font-size: 12px;
+    }
+    /* Оборачиваем длинные тексты в ячейках */
+    td, th {
+        word-break: break-all;
     }
 }
