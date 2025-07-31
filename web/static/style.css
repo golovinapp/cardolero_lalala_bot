@@ -1,6 +1,179 @@
-/* ... (предыдущий код остается) ... */
+@media (prefers-color-scheme: dark) {
+    body {
+        background: #1a1a1a;
+        color: #fff;
+    }
+    input, textarea, select, button {
+        background: #2c2c2c;
+        color: #fff;
+        border: 2px solid #4a4a4a;
+    }
+    button {
+        background: #ff6f61;
+        color: #fff;
+    }
+}
 
-/* Стили для кнопок удаления */
+body {
+    font-family: 'Comic Sans MS', 'Arial', sans-serif;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+    background: #ffeb3b;
+    line-height: 1.6;
+    animation: bounceBackground 5s infinite;
+}
+
+@keyframes bounceBackground {
+    0%, 100% { background-color: #ffeb3b; }
+    50% { background-color: #ffcc00; }
+}
+
+h1, h2 {
+    text-align: center;
+    color: #ff5722;
+    font-size: 28px;
+    text-shadow: 2px 2px #fff;
+}
+
+h1::after {
+    content: " 🎴✨";
+}
+h2::after {
+    content: " 📋🎉";
+}
+
+form, table {
+    width: 100%;
+    margin-bottom: 20px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    border: 3px dashed #ff9800;
+}
+
+input, textarea, select {
+    width: 100%;
+    padding: 15px;
+    margin: 10px 0;
+    border: 2px solid #ff9800;
+    border-radius: 10px;
+    font-size: 16px;
+    background: #fff3e0;
+    box-sizing: border-box;
+}
+
+button {
+    padding: 15px 30px;
+    cursor: pointer;
+    background: #ff6f61;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 18px;
+    transition: transform 0.2s, background 0.2s;
+    display: block;
+    width: 100%;
+    margin: 10px 0;
+}
+
+button:hover {
+    transform: scale(1.1);
+    background: #ff3d2e;
+}
+
+button::after {
+    content: " 🚀";
+}
+
+form[method="post"] button[type="submit"] {
+    padding: 5px 10px;
+    font-size: 12px;
+    width: auto;
+    margin: 0;
+    background: #f44336;
+}
+
+form[method="post"] button[type="submit"]:hover {
+    background: #d32f2f;
+    transform: scale(1.05);
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+    background: #ffebee;
+    table-layout: fixed;
+}
+
+td, th {
+    border: 2px solid #ff9800;
+    padding: 15px;
+    text-align: center;
+    font-size: 16px;
+    word-wrap: break-word;
+}
+
+td a {
+    color: #e91e63;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+td a:hover {
+    text-decoration: underline;
+    color: #d81b60;
+}
+
+form button[type="submit"] {
+    background: #4caf50;
+}
+
+form button[type="submit"]:hover {
+    background: #388e3c;
+}
+
+@media (max-width: 600px) {
+    body {
+        padding: 10px;
+    }
+    h1 {
+        font-size: 22px;
+    }
+    h2 {
+        font-size: 18px;
+    }
+    form, table {
+        padding: 10px;
+        border-radius: 10px;
+    }
+    input, textarea, select {
+        font-size: 14px;
+        padding: 10px;
+    }
+    button {
+        font-size: 14px;
+        padding: 10px 20px;
+    }
+    table {
+        display: block;
+        overflow-x: auto;
+    }
+    td, th {
+        min-width: 100px;
+        font-size: 12px;
+        padding: 8px;
+        word-break: break-all;
+    }
+    td a {
+        font-size: 12px;
+    }
+    form[method="post"] button[type="submit"] {
+        padding: 4px 8px;
+        font-size: 10px;
+    }
+}
 form[method="post"] button[type="submit"] {
     padding: 5px 10px; /* Уменьшаем размер */
     font-size: 12px; /* Уменьшаем шрифт */
