@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>Управление карточками</h1>
+<form method="post">
+    <input type="text" name="name" placeholder="Название" required>
+    <textarea name="description" placeholder="Описание" required></textarea>
+    <input type="number" name="points" placeholder="Очки" inputmode="numeric" required>
+    <select name="rarity" required>
+        <option value="обычная">Обычная</option>
+        <option value="редкая">Редкая</option>
+    </select>
+    <input type="text" name="image_url" placeholder="URL изображения" required>
+    <button type="submit">Добавить</button>
+</form>
+
+<h2>Список карточек</h2>
+<table>
+    {% for card in cards %}
+    <tr>
+        <td>{{ card.name }}</td>
+        <td>{{ card.rarity }}</td>
+        <td>{{ card.points }}</td>
+        <td><a href="{{ url_for('edit_card', card_id=card.id) }}">Редактировать</a></td>
+        <td>
+            <form method="post" action="{{ url_for('delete_card', card_id=card.id) }}">
+                <button type="submit">Удалить</button>
+            </form>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+
+<div>
+    {% if page > 1 %}
+        <a href="{{ url_for('cards', page=page-1) }}">Предыдущая</a>
+    {% endif %}
+    {% if page < total_pages %}
+        <a href="{{ url_for('cards', page=page+1) }}">Следующая</a>
+    {% endif %}
+</div>
+{% endblock %}
