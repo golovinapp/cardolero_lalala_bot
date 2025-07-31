@@ -89,7 +89,11 @@ def edit_card(card_id):
         flash("Карточка не найдена!")
         return redirect(url_for('cards'))
     
-    page = int(request.args.get('page', 1))  # Передача текущей страницы
+    page = int(request.args.get('page', 1))  # Текущая страница
+    total_cards = session.query(Card).count()  # Общее количество карточек
+    per_page = 5  # Как в маршруте /cards
+    total_pages = (total_cards + per_page - 1) // per_page  # Расчёт total_pages
+    
     if request.method == 'POST':
         card.name = request.form.get('name')
         card.description = request.form.get('description')
@@ -106,8 +110,8 @@ def edit_card(card_id):
         session.commit()
         flash("Карточка обновлена! ✨")
         return redirect(url_for('cards', page=page))
-    return render_template('cards.html', card=card, page=page)
-
+    
+    return render_template('cards.html', card=card, page=page, total_pages=total_pages)
 @app.route('/static/images/<filename>')
 def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
