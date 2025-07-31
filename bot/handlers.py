@@ -15,15 +15,44 @@ class CardStates(StatesGroup):
     SELECT_RARITY = State()
     SELECT_CARD = State()
 
+# Определение рангов
+RANK_SYSTEM = {
+    0: {"title": "Наблюдатель", "emoji": "👀", "description": "Только присоединился"},
+    1: {"title": "Новичок", "emoji": "🐣", "description": "Сделал первые шаги"},
+    11: {"title": "Коллекционер", "emoji": "📦", "description": "Начал собирать карточки"},
+    26: {"title": "Знаток", "emoji": "🧠", "description": "Узнаёт карты по описанию"},
+    41: {"title": "Искатель редкостей", "emoji": "🔍", "description": "Ценит каждую найденную карту"},
+    61: {"title": "Мастер коллекций", "emoji": "🧙", "description": "Почти вся коллекция собрана"},
+    80: {"title": "Архивариус", "emoji": "📚", "description": "Хранитель знаний"},
+    95: {"title": "Легенда", "emoji": "🌟", "description": "Остались считанные карты"},
+    100: {"title": "Гуру коллекций", "emoji": "🏆", "description": "Собрал абсолютно все"}
+}
+
+def calculate_rank(user_cards_count, total_cards):
+    if total_cards == 0:
+        return RANK_SYSTEM[0]
+    percentage = (user_cards_count / total_cards) * 100
+    for threshold in sorted(RANK_SYSTEM.keys(), reverse=True):
+        if percentage >= threshold:
+            return RANK_SYSTEM[threshold]
+    return RANK_SYSTEM[0]
+
 @router.message(Command("start"))
 async def cmd_start(message: Message):
     session = get_session()
     user = session.query(User).filter_by(id=message.from_user.id).first()
     if not user:
-        user = User(id=message.from_user.id, username=message.from_user.username)
+        user = User(id=message.from_user.id, username=message.from_user.first_name or "Друг")
         session.add(user)
         session.commit()
-    await message.answer("Добро пожаловать! Выберите действие:", reply_markup=main_menu())
+    total_cards = session.query(Card).count()
+    user_cards = session.query(UserCard).filter_by(user_id=user.id).distinct(Card.id).count()
+    rank = calculate_rank(user_cards, total_cards)
+    user.title = rank["title"]
+    user.rank = rank["emoji"]
+    user.rank_description = rank["description"]
+    session.commit()
+    await message.answer(f"Добро пожаловать, {user.rank} {user.username}!\n{rank['description']}\nВыберите действие:", reply_markup=main_menu())
 
 @router.message(F.text == "Получить карточку")
 async def get_card(message: Message):
@@ -45,10 +74,12 @@ async def get_card(message: Message):
     user.points += random_card.points
     user.last_card_received = now
     
-    if user.points >= 1000:
-        user.title = "Гуру"
-    elif user.points >= 500:
-        user.title = "Профи"
+    total_cards = session.query(Card).count()
+    user_cards = session.query(UserCard).filter_by(user_id=user.id).distinct(Card.id).count()
+    rank = calculate_rank(user_cards, total_cards)
+    user.title = rank["title"]
+    user.rank = rank["emoji"]
+    user.rank_description = rank["description"]
     
     session.add(user_card)
     session.commit()
@@ -72,23 +103,6 @@ async def my_cards(message: Message, state: FSMContext):
     await message.answer("Выберите категорию:", reply_markup=cards_menu())
     await state.set_state(CardStates.SELECT_RARITY)
 
-# @router.callback_query(CardStates.SELECT_RARITY)
-# async def select_rarity(callback: CallbackQuery, state: FSMContext):
-#     rarity = callback.data
-#     session = get_session()
-#     user_cards = session.query(UserCard).join(Card).filter(
-#         UserCard.user_id == callback.from_user.id,
-#         Card.rarity == rarity
-#     ).all()
-    
-#     if not user_cards:
-#         await callback.message.answer("У вас нет карточек этой редкости!")
-#         return
-    
-#     cards = {uc.card.name: uc.card_id for uc in user_cards}
-#     await callback.message.answer("Выберите карточку:", reply_markup=card_details(cards, rarity))
-#     await state.set_state(CardStates.SELECT_CARD)
-#     await callback.answer()
 @router.callback_query(CardStates.SELECT_RARITY)
 async def select_rarity(callback: CallbackQuery, state: FSMContext):
     rarity = callback.data
@@ -162,11 +176,15 @@ async def profile(message: Message):
     session = get_session()
     user = session.query(User).filter_by(id=message.from_user.id).first()
     card_count = session.query(UserCard).filter_by(user_id=user.id).count()
+    total_cards = session.query(Card).count()
+    user_cards = session.query(UserCard).filter_by(user_id=user.id).distinct(Card.id).count()
+    rank = calculate_rank(user_cards, total_cards)
     await message.answer(
-        f"Имя: {user.username}\n"
-        f"Карточек: {card_count}\n"
+        f"Имя: {user.username}\n"  # Используем username как имя
+        f"Карточек: {card_count} ({user_cards}/{total_cards})\n"
         f"Очки: {user.points}\n"
-        f"Титул: {user.title}",
+        f"Ранг: {rank['emoji']} {rank['title']}\n"
+        f"Описание: {rank['description']}",
         reply_markup=main_menu()
     )
 
@@ -176,5 +194,8 @@ async def top_players(message: Message):
     top_users = session.query(User).order_by(User.points.desc()).limit(10).all()
     text = "Топ игроков:\n"
     for i, user in enumerate(top_users, 1):
-        text += f"{i}. {user.username} — {user.points} очков\n"
+        total_cards = session.query(Card).count()
+        user_cards = session.query(UserCard).filter_by(user_id=user.id).distinct(Card.id).count()
+        rank = calculate_rank(user_cards, total_cards)
+        text += f"{i}. {user.username} {rank['emoji']} — {user.points} очков\n"
     await message.answer(text, reply_markup=main_menu())

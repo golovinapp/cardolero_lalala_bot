@@ -48,7 +48,6 @@ def cards():
         elif not points.isdigit():
             flash("Очки должны быть числом! 🔢")
         else:
-            # Сохраняем изображение с уникальным именем
             if image:
                 filename = f"{uuid.uuid4()}.{image.filename.split('.')[-1]}"
                 image_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
@@ -80,12 +79,17 @@ def delete_card(card_id):
         session.delete(card)
         session.commit()
         flash("Карточка удалена! 🗑️")
-    return redirect(url_for('cards'))
+    return redirect(url_for('cards', page=request.args.get('page', 1)))
 
 @app.route('/card/<int:card_id>/edit', methods=['GET', 'POST'])
 def edit_card(card_id):
     session = get_session()
     card = session.query(Card).get(card_id)
+    if not card:
+        flash("Карточка не найдена!")
+        return redirect(url_for('cards'))
+    
+    page = int(request.args.get('page', 1))  # Передача текущей страницы
     if request.method == 'POST':
         card.name = request.form.get('name')
         card.description = request.form.get('description')
@@ -101,8 +105,8 @@ def edit_card(card_id):
             card.image_url = f"/static/images/{filename}"
         session.commit()
         flash("Карточка обновлена! ✨")
-        return redirect(url_for('cards'))
-    return render_template('cards.html', card=card)
+        return redirect(url_for('cards', page=page))
+    return render_template('cards.html', card=card, page=page)
 
 @app.route('/static/images/<filename>')
 def uploaded_file(filename):

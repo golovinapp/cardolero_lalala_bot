@@ -7,11 +7,13 @@ Base = declarative_base()
 
 class User(Base):
     __tablename__ = 'users'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)  # Telegram ID
     username = Column(String, nullable=True)
     points = Column(Integer, default=0)
     last_card_received = Column(DateTime, nullable=True)
-    title = Column(String, default="Новичок")
+    title = Column(String, default="Наблюдатель")  # Ранг будет обновляться
+    rank = Column(String, default="👀")  # Эмодзи ранга
+    rank_description = Column(String, default="Только присоединился")  # Описание ранга
 
 class Card(Base):
     __tablename__ = 'cards'
@@ -19,7 +21,7 @@ class Card(Base):
     name = Column(String, nullable=False)
     description = Column(String, nullable=False)
     points = Column(Integer, nullable=False)
-    rarity = Column(String, nullable=False)
+    rarity = Column(String, nullable=False)  # "обычная" / "редкая" / "легендарная"
     image_url = Column(String, nullable=False)
 
 class UserCard(Base):

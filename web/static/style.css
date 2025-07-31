@@ -1,91 +1,118 @@
 @media (prefers-color-scheme: dark) {
     body {
-        background: #333;
+        background: #1a1a1a;
         color: #fff;
     }
     input, textarea, select, button {
-        background: #444;
+        background: #2c2c2c;
         color: #fff;
-        border: 1px solid #666;
+        border: 2px solid #4a4a4a;
     }
     button {
-        background: #555;
+        background: #ff6f61;
         color: #fff;
     }
 }
 
 body {
-    font-family: 'Arial', sans-serif;
+    font-family: 'Comic Sans MS', 'Arial', sans-serif;
     max-width: 900px;
     margin: 0 auto;
     padding: 20px;
-    background: #f0f4f8;
+    background: #ffeb3b;
     line-height: 1.6;
+    animation: bounceBackground 5s infinite;
+}
+
+@keyframes bounceBackground {
+    0%, 100% { background-color: #ffeb3b; }
+    50% { background-color: #ffcc00; }
 }
 
 h1, h2 {
     text-align: center;
-    color: #2c3e50;
+    color: #ff5722;
+    font-size: 28px;
+    text-shadow: 2px 2px #fff;
+}
+
+h1::after {
+    content: " 🎴✨";
+}
+h2::after {
+    content: " 📋🎉";
 }
 
 form, table {
     width: 100%;
     margin-bottom: 20px;
     background: #fff;
-    padding: 15px;
-    border-radius: 10px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    border: 3px dashed #ff9800;
 }
 
 input, textarea, select {
     width: 100%;
-    padding: 10px;
+    padding: 15px;
     margin: 10px 0;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    box-sizing: border-box;
+    border: 2px solid #ff9800;
+    border-radius: 10px;
+    font-size: 16px;
+    background: #fff3e0;
 }
 
 button {
-    padding: 10px 20px;
+    padding: 15px 30px;
     cursor: pointer;
-    background: #3498db;
+    background: #ff6f61;
     color: #fff;
     border: none;
-    border-radius: 5px;
-    font-size: 16px;
+    border-radius: 10px;
+    font-size: 18px;
+    transition: transform 0.2s, background 0.2s;
 }
 
 button:hover {
-    background: #2980b9;
+    transform: scale(1.1);
+    background: #ff3d2e;
+}
+
+button::after {
+    content: " 🚀";
 }
 
 table {
     border-collapse: collapse;
     width: 100%;
+    background: #ffebee;
 }
 
 td, th {
-    border: 1px solid #ddd;
-    padding: 10px;
-    text-align: left;
+    border: 2px solid #ff9800;
+    padding: 15px;
+    text-align: center;
+    font-size: 16px;
 }
 
 td a {
-    color: #e74c3c;
+    color: #e91e63;
     text-decoration: none;
+    font-weight: bold;
 }
 
 td a:hover {
     text-decoration: underline;
+    color: #d81b60;
 }
 
 form button[type="submit"] {
-    background: #2ecc71;
+    background: #4caf50;
 }
 
 form button[type="submit"]:hover {
-    background: #27ae60;
+    background: #388e3c;
 }
 
 /* Адаптивность для мобильных */
@@ -100,28 +127,22 @@ form button[type="submit"]:hover {
     td, th {
         min-width: 120px;
         font-size: 14px;
+        padding: 10px;
     }
     form {
-        padding: 10px;
+        padding: 15px;
     }
     input, textarea, select, button {
         font-size: 14px;
+        padding: 10px;
     }
     h1 {
-        font-size: 24px;
+        font-size: 22px;
     }
     h2 {
-        font-size: 20px;
+        font-size: 18px;
     }
-}
-
-/* Добавление emoji */
-h1::after {
-    content: " 🎴";
-}
-h2::after {
-    content: " 📋";
-}
-button::after {
-    content: " ✅";
+    button {
+        padding: 10px 20px;
+    }
 }
