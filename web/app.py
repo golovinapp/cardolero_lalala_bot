@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory
+from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory, jsonify
 from bot.database import get_session
 from bot.models import Card
 from dotenv import load_dotenv
@@ -35,39 +35,43 @@ def cards():
     per_page = 5
     cards = session.query(Card).offset((page-1)*per_page).limit(per_page).all()
     total_cards = session.query(Card).count()
-    
-    if request.method == 'POST':
-        name = request.form.get('name')
-        description = request.form.get('description')
-        points = request.form.get('points')
-        rarity = request.form.get('rarity')
-        image = request.files.get('image')
-        
-        if not all([name, description, points, rarity, image]):
-            flash("Все поля, включая изображение, обязательны! 📷")
-        elif not points.isdigit():
-            flash("Очки должны быть числом! 🔢")
-        else:
-            if image:
-                filename = f"{uuid.uuid4()}.{image.filename.split('.')[-1]}"
-                image_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                image.save(image_path)
-                image_url = f"/static/images/{filename}"
-            else:
-                image_url = ""
-            
-            card = Card(
-                name=name,
-                description=description,
-                points=int(points),
-                rarity=rarity,
-                image_url=image_url
-            )
-            session.add(card)
-            session.commit()
-            flash("Карточка добавлена! 🎉")
-    
     return render_template('cards.html', cards=cards, page=page, total_pages=(total_cards+per_page-1)//per_page)
+
+@app.route('/add_card', methods=['POST'])
+def add_card():
+    session = get_session()
+    name = request.form.get('name')
+    description = request.form.get('description')
+    points = request.form.get('points')
+    rarity = request.form.get('rarity')
+    image = request.files.get('image')
+
+    if not all([name, description, points, rarity, image]) or not points.isdigit():
+        return jsonify({'success': False, 'message': 'Все поля и изображение обязательны, очки — число! 📷🔢'}), 400
+
+    if image:
+        filename = f"{uuid.uuid4()}.{image.filename.split('.')[-1]}"
+        image_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        image.save(image_path)
+        image_url = f"/static/images/{filename}"
+    else:
+        image_url = ""
+
+    card = Card(
+        name=name,
+        description=description,
+        points=int(points),
+        rarity=rarity,
+        image_url=image_url
+    )
+    session.add(card)
+    session.commit()
+    return jsonify({'success': True, 'message': 'Карта успешно добавлена! 🎉', 'card': {
+        'name': name,
+        'rarity': rarity,
+        'points': points,
+        'id': card.id
+    }})
 
 @app.route('/card/<int:card_id>/delete', methods=['POST'])
 def delete_card(card_id):
@@ -89,10 +93,10 @@ def edit_card(card_id):
         flash("Карточка не найдена!")
         return redirect(url_for('cards'))
     
-    page = int(request.args.get('page', 1))  # Текущая страница
-    total_cards = session.query(Card).count()  # Общее количество карточек
-    per_page = 5  # Как в маршруте /cards
-    total_pages = (total_cards + per_page - 1) // per_page  # Расчёт total_pages
+    page = int(request.args.get('page', 1))
+    total_cards = session.query(Card).count()
+    per_page = 5
+    total_pages = (total_cards + per_page - 1) // per_page
     
     if request.method == 'POST':
         card.name = request.form.get('name')
@@ -112,6 +116,7 @@ def edit_card(card_id):
         return redirect(url_for('cards', page=page))
     
     return render_template('cards.html', card=card, page=page, total_pages=total_pages)
+
 @app.route('/static/images/<filename>')
 def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)

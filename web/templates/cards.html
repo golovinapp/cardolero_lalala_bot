@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
 <h1>Управление карточками</h1>
-<form method="post" enctype="multipart/form-data">
+<form id="addCardForm" method="post" enctype="multipart/form-data">
     <input type="text" name="name" placeholder="Название 🎉" value="{{ card.name if card else '' }}" required>
     <textarea name="description" placeholder="Описание ✨" required>{{ card.description if card else '' }}</textarea>
     <input type="number" name="points" placeholder="Очки 🔢" inputmode="numeric" value="{{ card.points if card else '' }}" required>
@@ -26,7 +26,7 @@
             <th>Удалить</th>
         </tr>
     </thead>
-    <tbody>
+    <tbody id="cardsTable">
         {% for card in cards %}
         <tr>
             <td>{{ card.name }}</td>
@@ -52,4 +52,23 @@
     {% endif %}
 </div>
 {% endif %}
+
+<script>
+document.getElementById('addCardForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const response = await fetch('/add_card', {
+        method: 'POST',
+        body: formData
+    });
+    const data = await response.json();
+    if (data.success) {
+        alert(data.message); // Уведомление для пользователя
+        const newRow = `<tr><td>${data.card.name}</td><td>${data.card.rarity}</td><td>${data.card.points}</td><td><a href="/card/${data.card.id}/edit?page=1">Редактировать🎉</a></td><td><form method="post" action="/card/${data.card.id}/delete?page=1"><button type="submit">Удалить🗑️</button></form></td></tr>`;
+        document.getElementById('cardsTable').insertAdjacentHTML('beforeend', newRow);
+    } else {
+        alert(data.message);
+    }
+});
+</script>
 {% endblock %}
